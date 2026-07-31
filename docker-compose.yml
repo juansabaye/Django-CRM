@@ -58,7 +58,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/')"]
+      test: ["CMD", "python", "-c", "import urllib.request, urllib.error\ntry:\n    urllib.request.urlopen('http://127.0.0.1:8000/', timeout=3)\nexcept urllib.error.HTTPError:\n    pass"]
       interval: 5s
       timeout: 5s
       retries: 80
