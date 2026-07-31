@@ -14,5 +14,8 @@ export default defineConfig(({ mode }) => {
       },
       autoUploadSourceMaps: !!env.PUBLIC_SENTRY_DSN
     }), tailwindcss(), sveltekit()],
+    server: {
+      allowedHosts: ['crm.vecireal.com'],
+    },
   };
 });
