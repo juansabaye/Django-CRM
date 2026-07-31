@@ -49,6 +49,7 @@ services:
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     volumes:
       - ./backend:/app
+      - backend_venv:/app/.venv
       - ./docker/backend/entrypoint.sh:/entrypoint.sh:ro
     depends_on:
       db:
@@ -80,6 +81,7 @@ services:
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     volumes:
       - ./backend:/app
+      - backend_venv:/app/.venv
     depends_on:
       db:
         condition: service_healthy
@@ -110,6 +112,7 @@ services:
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     volumes:
       - ./backend:/app
+      - backend_venv:/app/.venv
     depends_on:
       db:
         condition: service_healthy
@@ -143,3 +146,4 @@ services:
 volumes:
   postgres_data:
   frontend_node_modules:
+  backend_venv:
