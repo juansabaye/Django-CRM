@@ -56,7 +56,9 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: sleep infinity
+    command: >
+      bash -c '/bin/bash /entrypoint.sh; echo "=== ENTRYPOINT EXITED code=$? ==="; sleep infinity'
+
 
 volumes:
   postgres_data:
