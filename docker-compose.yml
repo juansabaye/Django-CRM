@@ -32,6 +32,7 @@ services:
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - DOMAIN_NAME=${DOMAIN_NAME}
       - SWAGGER_ROOT_URL=${DOMAIN_NAME}
+      - FRONTEND_URL=${DOMAIN_NAME}
       - DBNAME=crm_db
       - DBUSER=crm_user
       - DBPASSWORD=${DB_PASSWORD}
@@ -112,6 +113,7 @@ services:
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - DOMAIN_NAME=${DOMAIN_NAME}
       - SWAGGER_ROOT_URL=${DOMAIN_NAME}
+      - FRONTEND_URL=${DOMAIN_NAME}
       - DBNAME=crm_db
       - DBUSER=crm_user
       - DBPASSWORD=${DB_PASSWORD}
@@ -147,6 +149,7 @@ services:
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - DOMAIN_NAME=${DOMAIN_NAME}
       - SWAGGER_ROOT_URL=${DOMAIN_NAME}
+      - FRONTEND_URL=${DOMAIN_NAME}
       - DBNAME=crm_db
       - DBUSER=crm_user
       - DBPASSWORD=${DB_PASSWORD}
