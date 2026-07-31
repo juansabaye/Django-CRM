@@ -56,7 +56,36 @@ services:
       redis:
         condition: service_healthy
     command: >
-      bash -c '/bin/bash /app/entrypoint.sh; echo "=== ENTRYPOINT EXITED code=$? ==="; sleep infinity'
+      bash -c '
+      set +e;
+      echo "Waiting for PostgreSQL...";
+      retries=0;
+      max_retries=30;
+      until (echo > /dev/tcp/$$DBHOST/$$DBPORT) 2>/dev/null; do
+        retries=$$((retries + 1));
+        if [ $$retries -ge $$max_retries ]; then
+          echo "=== TIMED OUT WAITING FOR POSTGRES ===";
+          exec sleep infinity;
+        fi;
+        echo "  not ready yet ($$retries/$$max_retries)...";
+        sleep 1;
+      done;
+      echo "PostgreSQL is ready.";
+      echo "Running migrations...";
+      python manage.py migrate --noinput;
+      rc=$$?;
+      if [ $$rc -ne 0 ]; then echo "=== MIGRATE FAILED rc=$$rc ==="; exec sleep infinity; fi;
+      echo "Creating default admin user...";
+      python manage.py create_default_admin;
+      rc=$$?;
+      if [ $$rc -ne 0 ]; then echo "=== CREATE_ADMIN FAILED rc=$$rc ==="; exec sleep infinity; fi;
+      echo "Collecting static files...";
+      python manage.py collectstatic --noinput;
+      rc=$$?;
+      if [ $$rc -ne 0 ]; then echo "=== COLLECTSTATIC FAILED rc=$$rc ==="; exec sleep infinity; fi;
+      echo "Starting server...";
+      exec python manage.py runserver 0.0.0.0:8000
+      '
 
 
 volumes:
