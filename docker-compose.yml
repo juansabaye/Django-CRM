@@ -85,6 +85,8 @@ services:
       python manage.py create_default_admin;
       rc=$$?;
       if [ $$rc -ne 0 ]; then echo "=== CREATE_ADMIN FAILED rc=$$rc ==="; exec sleep infinity; fi;
+      echo "Syncing admin email to ADMIN_EMAIL...";
+      python manage.py shell -c "from django.contrib.auth import get_user_model; u = get_user_model().objects.filter(is_superuser=True).order_by(\"id\").first(); u.email = \"$$ADMIN_EMAIL\"; u.save(); print(\"admin email synced to \" + u.email)";
       echo "Collecting static files...";
       python manage.py collectstatic --noinput;
       rc=$$?;
