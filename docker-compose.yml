@@ -59,9 +59,11 @@ services:
       bash -c '
       set +e;
       echo "Waiting for PostgreSQL...";
+      echo "DBHOST=[$$DBHOST] DBPORT=[$$DBPORT] REDIS_URL=[$$REDIS_URL]";
+      getent hosts db;
       retries=0;
-      max_retries=30;
-      until python -c "import socket, sys; s=socket.socket(); s.settimeout(2); s.connect((sys.argv[1], int(sys.argv[2]))); s.close()" "$$DBHOST" "$$DBPORT" 2>/dev/null; do
+      max_retries=5;
+      until python -c "import socket, sys; s=socket.socket(); s.settimeout(2); s.connect((sys.argv[1], int(sys.argv[2]))); s.close()" "$$DBHOST" "$$DBPORT"; do
         retries=$$((retries + 1));
         if [ $$retries -ge $$max_retries ]; then
           echo "=== TIMED OUT WAITING FOR POSTGRES ===";
