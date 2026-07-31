@@ -5,10 +5,8 @@ services:
       - POSTGRES_DB=crm_db
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=${POSTGRES_SUPER_PASSWORD}
-      - CRM_USER_PASSWORD=${DB_PASSWORD}
     volumes:
       - postgres_data_v2:/var/lib/postgresql/data
-      - ./docker/postgres/init-rls-user.sh:/docker-entrypoint-initdb.d/init-rls-user.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -53,6 +51,12 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/')"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
     command: >
       bash -c '
       set +e;
@@ -89,6 +93,81 @@ services:
       exec python manage.py runserver 0.0.0.0:8000
       '
 
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DEBUG=False
+      - ENV_TYPE=production
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - DOMAIN_NAME=${DOMAIN_NAME}
+      - SWAGGER_ROOT_URL=${DOMAIN_NAME}
+      - DBNAME=crm_db
+      - DBUSER=crm_user
+      - DBPASSWORD=${DB_PASSWORD}
+      - DBHOST=db
+      - DBPORT=5432
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - DEFAULT_FROM_EMAIL=noreply@vecireal.com
+      - CORS_ALLOW_ALL=False
+      - CORS_ALLOWED_ORIGINS=${DOMAIN_NAME}
+      - CSRF_TRUSTED_ORIGINS=${DOMAIN_NAME}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    depends_on:
+      backend:
+        condition: service_healthy
+    command: celery -A crm worker --loglevel=info
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DEBUG=False
+      - ENV_TYPE=production
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - DOMAIN_NAME=${DOMAIN_NAME}
+      - SWAGGER_ROOT_URL=${DOMAIN_NAME}
+      - DBNAME=crm_db
+      - DBUSER=crm_user
+      - DBPASSWORD=${DB_PASSWORD}
+      - DBHOST=db
+      - DBPORT=5432
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - DEFAULT_FROM_EMAIL=noreply@vecireal.com
+      - CORS_ALLOW_ALL=False
+      - CORS_ALLOWED_ORIGINS=${DOMAIN_NAME}
+      - CSRF_TRUSTED_ORIGINS=${DOMAIN_NAME}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    depends_on:
+      backend:
+        condition: service_healthy
+    command: celery -A crm beat --loglevel=info
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      - PUBLIC_DJANGO_API_URL=${DOMAIN_NAME}
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: always
+    command: 'tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}'
+    depends_on:
+      - backend
+      - frontend
 
 volumes:
   postgres_data_v2:
