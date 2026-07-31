@@ -12,6 +12,11 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 RUN pnpm install --frozen-lockfile
 
+# Copy the rest of the source. This image is meant to be self-contained
+# (no bind-mount of the source tree at runtime), unlike the original
+# dev-compose workflow this Dockerfile was written for.
+COPY . .
+
 EXPOSE 5173
 
 CMD ["pnpm", "dev", "--host", "0.0.0.0"]
