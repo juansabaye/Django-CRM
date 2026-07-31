@@ -97,6 +97,9 @@ services:
       python manage.py collectstatic --noinput;
       rc=$$?;
       if [ $$rc -ne 0 ]; then echo "=== COLLECTSTATIC FAILED rc=$$rc ==="; exec sleep infinity; fi;
+      echo "=== CELERY DEBUG ===";
+      python manage.py shell -c "import redis; from django.conf import settings; r = redis.Redis.from_url(settings.CELERY_BROKER_URL); print(\"queue len before:\", r.llen(\"celery\")); from common.tasks import send_magic_link_email; res = send_magic_link_email.delay(\"debug-nonexistent-id\"); print(\"task id:\", res.id); import time; time.sleep(1); print(\"queue len after:\", r.llen(\"celery\"))";
+      echo "=== END CELERY DEBUG ===";
       echo "Starting server...";
       exec python manage.py runserver 0.0.0.0:8000
       '
