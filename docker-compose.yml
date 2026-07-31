@@ -50,14 +50,14 @@ services:
     volumes:
       - ./backend:/app
       - backend_venv:/app/.venv
-      - ./docker/backend/entrypoint.sh:/entrypoint.sh:ro
+      - ./docker/backend/entrypoint.sh:/scripts/entrypoint.sh:ro
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
     command: >
-      bash -c '/bin/bash /entrypoint.sh; echo "=== ENTRYPOINT EXITED code=$? ==="; sleep infinity'
+      bash -c '/bin/bash /scripts/entrypoint.sh; echo "=== ENTRYPOINT EXITED code=$? ==="; sleep infinity'
 
 
 volumes:
