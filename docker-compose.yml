@@ -178,8 +178,11 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - PUBLIC_DJANGO_API_URL=${DOMAIN_NAME}
     environment:
       - PUBLIC_DJANGO_API_URL=${DOMAIN_NAME}
+      - ORIGIN=${DOMAIN_NAME}
     depends_on:
       backend:
         condition: service_started

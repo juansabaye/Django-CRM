@@ -17,6 +17,15 @@ RUN pnpm install --frozen-lockfile
 # dev-compose workflow this Dockerfile was written for.
 COPY . .
 
-EXPOSE 5173
+# PUBLIC_-prefixed vars are inlined into the client bundle at build time by
+# Vite, so this must be available before `pnpm build`, not just at runtime.
+ARG PUBLIC_DJANGO_API_URL
+ENV PUBLIC_DJANGO_API_URL=$PUBLIC_DJANGO_API_URL
 
-CMD ["pnpm", "dev", "--host", "0.0.0.0"]
+RUN pnpm build
+
+EXPOSE 5173
+ENV PORT=5173
+ENV HOST=0.0.0.0
+
+CMD ["node", "build/index.js"]
