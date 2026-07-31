@@ -47,9 +47,6 @@ services:
       - CSRF_TRUSTED_ORIGINS=${DOMAIN_NAME}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-    volumes:
-      - ./backend:/app
-      - backend_venv:/app/.venv
     depends_on:
       db:
         condition: service_healthy
@@ -90,4 +87,3 @@ services:
 
 volumes:
   postgres_data_v2:
-  backend_venv:
